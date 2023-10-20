@@ -1,0 +1,55 @@
+// Constants and definitions
+const int ROWS = 5;
+const int COLUMNS = 5;
+const int BLOCK_SIZE = 1024; // in bits
+
+// Initialize state matrix (A) and constants
+uint64_t A[5][5];
+const uint64_t RC[24] = {...}; // Round constants
+
+// Message input (P0)
+uint64_t P0[5][5] = {...}; // Initialize P0
+
+// Initialize capacity lanes to zero
+for (int i = 0; i < COLUMNS; i++) {
+    for (int j = 0; j < COLUMNS; j++) {
+        A[i][j] = 0;
+    }
+}
+
+// Absorb phase
+int rate = 1600 - (2 * BLOCK_SIZE); // Rate in bits
+int i = 0;
+while (i < BLOCK_SIZE) {
+    // XOR data from P0 into the state matrix A
+    for (int x = 0; x < COLUMNS; x++) {
+        for (int y = 0; y < COLUMNS; y++) {
+            A[x][y] ^= P0[x][y];
+        }
+    }
+
+    // Keccak permutation (not shown)
+    keccak_permutation(A);
+
+    i += rate;
+}
+
+// Squeeze phase
+uint64_t hash[5][5]; // The resulting hash value
+
+i = 0;
+while (i < BLOCK_SIZE) {
+    // Copy data from the state matrix A into the hash
+    for (int x = 0; x < COLUMNS; x++) {
+        for (int y = 0; y < COLUMNS; y++) {
+            hash[x][y] = A[x][y];
+        }
+    }
+
+    // Keccak permutation (not shown)
+    keccak_permutation(A);
+
+    i += rate;
+}
+
+// Now 'hash' contains the final SHA-3 hash
